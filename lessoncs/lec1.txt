@@ -1,0 +1,187 @@
+scala> 8*5+2
+res0: Int = 42
+
+scala> res0*8
+res1: Int = 336
+
+scala> val j=9*74
+j: Int = 666
+
+scala> "hello, " +res0
+res2: String = hello, 42
+
+scala> val x,y=100
+x: Int = 100
+y: Int = 100
+
+scala> x+y
+res4: Int = 200
+
+scala> val St,Str:String=null
+St: String = null
+Str: String = null
+
+scala> 1.toString
+res3: String = 1
+
+scala> 1.to(10)
+res5: scala.collection.immutable.Range.Inclusive = Range 1 to 10
+~ scala> 1 to 10
+
+scala> a+b 
+~scala> a.+b
+
+scala> var count = 0
+count: Int = 0
+scala> count += 1
+scala> print(count)
+1
+
+
+
+scala> import scala.math._
+import scala.math._
+
+scala> sqrt(7.0)
+res11: Double = 2.6457513110645907
+scala> pow(2.0,4)
+res12: Double = 16.0
+scala> "hello"(4)
+res15: Char = o
+~ scala> "hello".apply(4)
+
+scala> count = if(x>0) 10 else -10
+count: Int = 10
+scala> count = if(x>0){ x*10} else {y*(-10)}
+count: Int = 1000
+
+scala> val dis = {val dx=x-10;val dy = y+10;}
+dis: Unit = ()
+
+scala> val dis = {val dx=x-10;val dy = y+10; sqrt(dx*dx+dy*dy)}
+dis: Double = 142.12670403551894
+
+scala> count = 3
+count: Int = 3
+
+scala> while(count>0){
+     | count-=1
+     | println("hello scala")
+     | }
+hello scala
+hello scala
+hello scala
+
+scala> for(i<-1 to 3; from=4-i;j<- from to 3) print((10*i+j)+" ")
+13 22 23 31 32 33
+
+scala> for(i<-1 to 10) yield i%3
+res26: scala.collection.immutable.IndexedSeq[Int] = Vector(1, 2, 0, 1, 2, 0, 1, 2, 0, 1)
+
+scala> def abs(x:Double) = if (x>=0) x else -x
+abs: (x: Double)Double
+
+scala> def sum(args: Int*){
+     | var result=0
+     | for(arg<-args) result+=arg
+     | result
+     | }
+sum: (args: Int*)Unit
+
+scala> val someSum = sum(1,2,3,4)
+someSum: Unit = ()
+
+
+
+
+scala> val array2 = Array(1,2,3,4,5)
+array2: Array[Int] = Array(1, 2, 3, 4, 5)
+
+scala> import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.ArrayBuffer
+
+scala> val num = ArrayBuffer[Int]()
+num: scala.collection.mutable.ArrayBuffer[Int] = ArrayBuffer()
+
+scala> num+=8
+res28: num.type = ArrayBuffer(8)
+
+scala> num+=(1,2,3,4)
+res29: num.type = ArrayBuffer(8, 1, 2, 3, 4)
+
+scala> num.insert(2,5)
+
+scala> for(i<-0 until num.length)
+     | println(i+":"+num(i))
+0:8
+1:1
+2:5
+3:2
+4:3
+5:4
+
+scala> num.remove(0)
+res32: Int = 8
+
+scala> for(i<-0 until num.length)
+     | println(i+":"+num(i))
+0:1
+1:5
+2:2
+3:3
+4:4
+
+scala> num.remove(0,3)
+
+scala> for(i<-0 until num.length)
+     | println(i+":"+num(i))
+0:3
+1:4
+
+scala> for(el<-num)
+     | println(el)
+3
+4
+
+scala> for(el<-array2) yield 2*el
+res40: Array[Int] = Array(2, 4, 6, 8, 10)
+
+scala> for(el<-array2 if el%2==0) yield 2*el
+res45: Array[Int] = Array(4, 8)
+
+~scala> array2.filter(_%2==0).map(2*_)
+res44: Array[Int] = Array(4, 8)
+
+scala> var sortedArray2 = array2.sorted((x: Int, y: Int) => if (x < y) -1 else if (x == y) 0 else 1)
+sortedArray2: Array[Int] = Array(1, 2, 3, 4, 5)
+~scala.util.Sorting.quickSort(array2)
+
+
+scala> val s = Map("AAA"->10,"BB"->3)
+s: scala.collection.immutable.Map[String,Int] = Map(AAA -> 10, BB -> 3)
+
+
+RDD collection
+
+scala> val data = Array(1,2,3,4,5)
+data: Array[Int] = Array(1, 2, 3, 4, 5)
+
+scala> val distData = sc.parallelize(data)
+distData: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[0] at parallelize at <console>:28
+
+scala> distData.reduce((a,b)=>a+b)
+res52: Int = 15
+
+scala> val rdd1 = sc.parallelize(List(1,2,3,4,5,6,7))
+rdd1: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[3] at parallelize at <console>:27
+
+scala> val rdd2 = rdd1.map(_ *2).sortBy(x=>x,true)
+rdd2: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[9] at sortBy at <console>:28
+
+scala> val rdd3 = rdd2.filter(_ >=10)
+rdd3: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[10] at filter at <console>:27
+
+scala> rdd3.collect
+res53: Array[Int] = Array(10, 12, 14)
+
+

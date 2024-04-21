@@ -1,0 +1,159 @@
+scala> val rdd1 = sc.parallelize(List(1,2,3,4))
+rdd1: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[0] at parallelize at <console>:23
+
+scala> val rdd2 = rdd1.map(_ *2).sortBy(x=>x, true)
+rdd2: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[6] at sortBy at <console>:23
+
+scala> val rdd3 = rdd2.filter(_ >=10)
+rdd3: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[7] at filter at <console>:23
+
+scala> rdd3.collect
+res0: Array[Int] = Array()
+
+scala> val rdd1 = sc.parallelize(Array("a b c", "d e f", "h i j"))
+rdd1: org.apache.spark.rdd.RDD[String] = ParallelCollectionRDD[8] at parallelize at <console>:23
+
+scala> val rdd2 = rdd1.flatMap(_.split(' '))
+rdd2: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[9] at flatMap at <console>:23
+
+scala> rdd2.collect
+res3: Array[String] = Array(a, b, c, d, e, f, h, i, j)
+
+scala> val rdd1 = sc.parallelize(List(5,6,4,3))
+rdd1: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[10] at parallelize at <console>:23
+
+scala> val rdd2 = sc.parallelize(List(1,2,3,4))
+rdd2: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[11] at parallelize at <console>:23
+
+scala> val rdd3 = rdd1.union(rdd2)
+rdd3: org.apache.spark.rdd.RDD[Int] = UnionRDD[12] at union at <console>:24
+
+scala> val rdd4 = rdd1.intersection(rdd2)
+rdd4: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[18] at intersection at <console>:24
+
+scala> rdd3.distinct.collect
+res4: Array[Int] = Array(1, 2, 3, 4, 5, 6)
+
+scala> rdd4.collect
+res5: Array[Int] = Array(3, 4)
+
+////////
+
+scala> val rdd1 = sc.parallelize(List(("tom",1),("jerry",2),("kitty",2)))
+rdd1: org.apache.spark.rdd.RDD[(String, Int)] = ParallelCollectionRDD[24] at parallelize at <console>:23
+
+scala> val rdd2 = sc.parallelize(List(("jerry",2),("tom",1),("shuke",2)))
+rdd2: org.apache.spark.rdd.RDD[(String, Int)] = ParallelCollectionRDD[25] at parallelize at <console>:23
+
+scala> val rdd3 = rdd1.join(rdd2)
+rdd3: org.apache.spark.rdd.RDD[(String, (Int, Int))] = MapPartitionsRDD[28] at join at <console>:24
+
+scala> rdd3.collect
+res6: Array[(String, (Int, Int))] = Array((tom,(1,1)), (jerry,(2,2)))
+
+scala> val rdd4 = rdd1 union rdd2
+rdd4: org.apache.spark.rdd.RDD[(String, Int)] = UnionRDD[29] at union at <console>:24
+
+scala> rdd4.groupByKey
+res7: org.apache.spark.rdd.RDD[(String, Iterable[Int])] = ShuffledRDD[30] at groupByKey at <console>:24
+
+scala> rdd4.collect
+res8: Array[(String, Int)] = Array((tom,1), (jerry,2), (kitty,2), (jerry,2), (tom,1), (shuke,2))
+
+
+scala> val rdd3 = rdd1.cogroup(rdd2)
+rdd3: org.apache.spark.rdd.RDD[(String, (Iterable[Int], Iterable[Int]))] = MapPartitionsRDD[32] at cogroup at <console>:24
+
+scala> rdd3.collect
+res9: Array[(String, (Iterable[Int], Iterable[Int]))] = Array((tom,(CompactBuffer(1),CompactBuffer(1))), (shuke,(CompactBuffer(),CompactBuffer(2))), (kitty,(CompactBuffer(2),CompactBuffer())), (jerry,(CompactBuffer(2),CompactBuffer(2))))
+
+/////////
+
+scala> val rdd1 = sc.parallelize(List(5,6,4,3))
+rdd1: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[33] at parallelize at <console>:23
+
+scala> val rdd2 = rdd1.reduce(_+_)
+rdd2: Int = 18
+
+/////////
+
+scala> val rdd1 = sc.parallelize(List(("tom",1),("jerry",2),("kitty",2)))
+rdd1: org.apache.spark.rdd.RDD[(String, Int)] = ParallelCollectionRDD[34] at parallelize at <console>:23
+
+scala> val rdd2 = sc.parallelize(List(("jerry",2),("tom",1),("shuke",2)))
+rdd2: org.apache.spark.rdd.RDD[(String, Int)] = ParallelCollectionRDD[35] at parallelize at <console>:23
+
+scala> val rdd3 = rdd1.union(rdd2)
+rdd3: org.apache.spark.rdd.RDD[(String, Int)] = UnionRDD[37] at union at <console>:24
+
+scala> val rdd4 = rdd3.reduceByKey(_+_)
+rdd4: org.apache.spark.rdd.RDD[(String, Int)] = ShuffledRDD[38] at reduceByKey at <console>:23
+
+scala> rdd4.collect
+res12: Array[(String, Int)] = Array((tom,2), (shuke,2), (kitty,2), (jerry,4))
+
+///////////
+
+scala> val rdd = sc.textFile("file:///C:/Users/N1o/0projects/Spark/text.txt")
+rdd: org.apache.spark.rdd.RDD[String] = file:///C:/Users/N1o/0projects/Spark/text.txt MapPartitionsRDD[40] at textFile at <console>:23
+
+scala> val rdd1 = rdd.flatMap(x=>x.split(" "))
+rdd1: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[43] at flatMap at <console>:23
+
+scala> val rdd2 = rdd1.map(x=>(x,1))
+rdd2: org.apache.spark.rdd.RDD[(String, Int)] = MapPartitionsRDD[44] at map at <console>:23
+
+scala> rdd.collect
+res13: Array[String] = Array(Microsoft Windows [Version 10.0.19045.4291], (c) Microsoft Corporation. All rights reserved., "", C:\Users\N1o>C:\Users\N1o\0projects\Spark\spark-3.5.1-bin-hadoop3\bin\spark-shell, 24/04/15 11:39:38 WARN Shell: Did not find winutils.exe: java.io.FileNotFoundException: java.io.FileNotFoundException: HADOOP_HOME and hadoop.home.dir are unset. -see https://wiki.apache.org/hadoop/WindowsProblems, Setting default log level to "WARN"., To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel)., 24/04/15 11:39:43 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable, Spark context Web UI available at http://10.254.0.255:4040, Spark context available as 'sc' (mas...
+
+scala> rdd2.collect
+res14: Array[(String, Int)] = Array((Microsoft,1), (Windows,1), ([Version,1), (10.0.19045.4291],1), ((c),1), (Microsoft,1), (Corporation.,1), (All,1), (rights,1), (reserved.,1), ("",1), (C:\Users\N1o>C:\Users\N1o\0projects\Spark\spark-3.5.1-bin-hadoop3\bin\spark-shell,1), (24/04/15,1), (11:39:38,1), (WARN,1), (Shell:,1), (Did,1), (not,1), (find,1), (winutils.exe:,1), (java.io.FileNotFoundException:,1), (java.io.FileNotFoundException:,1), (HADOOP_HOME,1), (and,1), (hadoop.home.dir,1), (are,1), (unset.,1), (-see,1), (https://wiki.apache.org/hadoop/WindowsProblems,1), (Setting,1), (default,1), (log,1), (level,1), (to,1), ("WARN".,1), (To,1), (adjust,1), (logging,1), (level,1), (use,1), (sc.setLogLevel(newLevel).,1), (For,1), (SparkR,,1), (use,1), (setLogLevel(newLevel).,1), (24/04/15,1), (...
+
+scala> val rdd3 = rdd2.reduceByKey((x,y)=>x+y)
+rdd3: org.apache.spark.rdd.RDD[(String, Int)] = ShuffledRDD[45] at reduceByKey at <console>:23
+
+scala> rdd3.collect
+res15: Array[(String, Int)] = Array(('sc',1), (.__/\_,_/_/,1), (_____/,1), ((c),1), (level,2), ((master,1), (have,1), (classes,1), (2.12.18,1), (Java,1), (session,1), (Setting,1), (using,1), (Type,2), (Shell:,1), (C:\Users\N1o>C:\Users\N1o\0projects\Spark\spark-3.5.1-bin-hadoop3\bin\spark-shell,1), (WARN,2), (log,1), (-see,1), (version,2), (http://10.254.0.255:4040,1), (__,1), (UI,1), (are,1), (scala>,1), (load,1), (Using,1), (Corporation.,1), (Microsoft,2), (Web,1), (Welcome,1), (as,2), ("",44), (java.io.FileNotFoundException:,2), (24/04/15,2), (reserved.,1), (1.8.0_401),1), (____,1), ("WARN".,1), (Scala,1), (information.,1), (builtin-java,1), ((Java,1), (them,1), (64-Bit,1), (/_/\_\,1), (VM,,1), (For,1), (Spark,3), (__/__,1), ([Version,1), (/___/,1), (platform...,1), (/_/,1), (:help,1...
+
+scala> val rdd4 = rdd3.map(x=>x.swap).sortByKey(false).map(x=>x.swap)
+rdd4: org.apache.spark.rdd.RDD[(String, Int)] = MapPartitionsRDD[50] at map at <console>:23
+
+scala> rdd4.collect
+res16: Array[(String, Int)] = Array(("",44), (to,4), (Spark,3), (available,3), (level,2), (Type,2), (WARN,2), (version,2), (Microsoft,2), (as,2), (java.io.FileNotFoundException:,2), (24/04/15,2), (\/,2), (for,2), (use,2), (=,2), (context,2), (_,2), ('sc',1), (.__/\_,_/_/,1), (_____/,1), ((c),1), ((master,1), (have,1), (classes,1), (2.12.18,1), (Java,1), (session,1), (Setting,1), (using,1), (Shell:,1), (C:\Users\N1o>C:\Users\N1o\0projects\Spark\spark-3.5.1-bin-hadoop3\bin\spark-shell,1), (log,1), (-see,1), (http://10.254.0.255:4040,1), (__,1), (UI,1), (are,1), (scala>,1), (load,1), (Using,1), (Corporation.,1), (Web,1), (Welcome,1), (reserved.,1), (1.8.0_401),1), (____,1), ("WARN".,1), (Scala,1), (information.,1), (builtin-java,1), ((Java,1), (them,1), (64-Bit,1), (/_/\_\,1), (VM,,1), (Fo...
+
+scala> val rdd4 = rdd3.map(x=>x.swap).sortByKey(false).map(x=>x.swap)
+rdd4: org.apache.spark.rdd.RDD[(String, Int)] = MapPartitionsRDD[55] at map at <console>:23
+
+
+////////
+
+scala> val rdd = sc.textFile("file:///C:/Users/N1o/0projects/Spark/text.txt")
+.flatMap(_.split(" "))
+.map((_,1))
+.reduceByKey(_+_)
+.collect
+rdd: Array[(String, Int)] = Array(('sc',1), (.__/\_,_/_/,1), (_____/,1), ((c),1), (level,2), ((master,1), (have,1), (classes,1), (2.12.18,1), (Java,1), (session,1), (Setting,1), (using,1), (Type,2), (Shell:,1), (C:\Users\N1o>C:\Users\N1o\0projects\Spark\spark-3.5.1-bin-hadoop3\bin\spark-shell,1), (WARN,2), (log,1), (-see,1), (version,2), (http://10.254.0.255:4040,1), (__,1), (UI,1), (are,1), (scala>,1), (load,1), (Using,1), (Corporation.,1), (Microsoft,2), (Web,1), (Welcome,1), (as,2), ("",44), (java.io.FileNotFoundException:,2), (24/04/15,2), (reserved.,1), (1.8.0_401),1), (____,1), ("WARN".,1), (Scala,1), (information.,1), (builtin-java,1), ((Java,1), (them,1), (64-Bit,1), (/_/\_\,1), (VM,,1), (For,1), (Spark,3), (__/__,1), ([Version,1), (/___/,1), (platform...,1), (/_/,1), (:help,1),...
+
+////////////
+
+scala> val rdd = sc.textFile("file:///C:/Users/N1o/0projects/Spark/temps.dat")
+rdd: org.apache.spark.rdd.RDD[String] = file:///C:/Users/N1o/0projects/Spark/temps.dat MapPartitionsRDD[65] at textFile at <console>:23
+
+scala> val rdd2 = rdd.map(e=>{
+     | val arr = e.split(" ")
+     | (arr(0).toInt, (arr(1).toInt, arr(2).toInt))
+     | })
+rdd2: org.apache.spark.rdd.RDD[(Int, (Int, Int))] = MapPartitionsRDD[66] at map at <console>:23
+
+scala> import scala.math
+import scala.math
+
+scala> val rdd3 = rdd2.reduceByKey((a,b)=>{
+     | (math.max(a._1,b._1), math.min(a._2,b._2))
+     | })
+rdd3: org.apache.spark.rdd.RDD[(Int, (Int, Int))] = ShuffledRDD[67] at reduceByKey at <console>:24
+
+scala> rdd3.collect
+res20: Array[(Int, (Int, Int))] = Array((2000,(17,16)), (2002,(16,14)), (2004,(10,8)), (2001,(18,19)), (2003,(11,10)))
+
+

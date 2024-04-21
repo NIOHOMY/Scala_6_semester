@@ -1,0 +1,57 @@
+C:\Users\N1o\0projects\Spark\spark-3.5.1-bin-hadoop3\bin\spark-shell
+
+
+val x =sc.textFile("file:///C:/Users/N1o/0projects/Spark/Pakhomova.txt")
+
+val wordToFind = "123"
+
+
+// 1.1. Вывод строк, содержащих заданное слово
+
+val numberedLinesRDD = linesRDD.zipWithIndex()
+val numberedLinesWithWordRDD = numberedLinesRDD.filter { case (line, _) => line.contains(wordToFind) }
+val lineNumbersWithWord = numberedLinesWithWordRDD.map { case (_, lineNumber) => lineNumber }
+
+lineNumbersWithWord.collect().foreach(println)
+
+// 1.2. Вывод индексов строка - индексы заданного слова в строке
+val wordIndicesRDD = linesRDD.zipWithIndex().flatMap { case (line, lineIndex) =>
+  val wordIndices = line.split("\\s+").zipWithIndex.filter { case (word, _) => word == wordToFind }.map { case (_, wordIndex) => wordIndex }
+  if (wordIndices.nonEmpty) Some((lineIndex, wordIndices)) else None
+}
+
+wordIndicesRDD.collect().foreach { case (lineIndex, wordIndices) =>
+  println(s"Line: $lineIndex, Word indices in line: ${wordIndices.mkString(", ")}")
+}
+
+
+// 2. Посчитать количество вхождений заданного слова
+val wordCountRDD = linesRDD.flatMap(_.split("\\s+")).map(word => (word, 1)).reduceByKey(_ + _).filter(_._1 == wordToFind)
+
+
+println("Count of occurrences of the word '" + wordToFind + "': " + wordCountRDD.collect().headOption.map(_._2).getOrElse(0))
+
+
+// 3. Разбить текст на слова и удалить пустые строки
+val wordsRDD = linesRDD.flatMap(_.split("\\s+")).filter(_.nonEmpty)
+
+
+wordsRDD.collect().foreach(println)
+
+
+// 4. map reduce
+
+val array1 = Array(("a", 1), ("b", 2), ("c", 3))
+val array2 = Array(("a", 4), ("b", 5), ("c", 6))
+
+val rdd1 = sc.parallelize(array1)
+val rdd2 = sc.parallelize(array2)
+
+val reducedRDD = rdd1.union(rdd2).reduceByKey(_ + _)
+
+val mappedRDD = reducedRDD.mapValues(_ + 10)
+
+reducedRDD.collect().foreach(println)
+mappedRDD.collect().foreach(println)
+
+

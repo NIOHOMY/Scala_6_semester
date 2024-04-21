@@ -1,0 +1,5 @@
+C:\Users\N1o\0projects\Spark\spark-3.5.1-bin-hadoop3\bin\spark-shell
+
+http://localhost:4040/
+
+
