@@ -1,0 +1,210 @@
+C:\Users\N1o\0projects\Spark\spark-3.5.1-bin-hadoop3\bin\spark-shell
+
+scala> val df = spark.read.json("file:///C:/Users/N1o/0projects/Spark/labs/data.json")
+df: org.apache.spark.sql.DataFrame = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> df.show()
++---+-----+------+-----+--------+-----------+
+|Age|Class|Gender|Grade|    Name|    Subject|
++---+-----+------+-----+--------+-----------+
+| 25|   12|   man|   50|  Ivanov|    chinese|
+| 25|   12|   man|   60|  Ivanov|mathematics|
+| 25|   12|   man|   70|  Ivanov|    english|
+| 20|   12|   man|   50|  Petrov|    chinese|
+| 20|   12|   man|   50|  Petrov|mathematics|
+| 20|   12|   man|   50|  Petrov|    english|
+| 19|   12| woman|   70|Sidorova|    chinese|
+| 19|   12| woman|   70|Sidorova|mathematics|
+| 19|   12| woman|   70|Sidorova|    english|
+| 25|   12|   man|   50|   Lunin|    chinese|
+| 25|   12|   man|   60|   Lunin|mathematics|
+| 25|   12|   man|   70|   Lunin|    english|
+| 25|   13|   man|   60|Yakovlev|    chinese|
+| 25|   13|   man|   60|Yakovlev|mathematics|
+| 25|   13|   man|   70|Yakovlev|    english|
+| 20|   13|   man|   50|  Volkov|    chinese|
+| 20|   13|   man|   60|  Volkov|mathematics|
+| 20|   13|   man|   50|  Volkov|    english|
+| 19|   13| woman|   70|Zaitseva|    chinese|
+| 19|   13| woman|   80|Zaitseva|mathematics|
++---+-----+------+-----+--------+-----------+
+only showing top 20 rows
+
+	1
+
+val uniqueDF = df.dropDuplicates(Seq("Name", "Age", "Gender"))
+val uniqueTestPassersCount = uniqueDF.count()
+println(s"Number of unique people who took the test: $uniqueTestPassersCount")
+Number of unique people who took the test: 9
+
+	1.1
+	
+val countUnder20 = uniqueDF.filter($"Age" < 20).count()
+
+	1.2
+	
+val countEq20 = uniqueDF.filter($"Age" === 20).count()
+
+	1.3
+	
+val countOver20 = uniqueDF.filter($"Age" < 20).count()
+
+	2
+	
+val uniqueManDF = df.filter($"Gender" === "man").dropDuplicates(Seq("Name", "Age"))
+
+	2.1
+	
+val uniqueWomanDF = df.filter($"Gender" === "woman").dropDuplicates(Seq("Name", "Age"))
+
+	3
+	
+val uniqueClass12DF = uniqueDF.filter($"Class" === "12")
+
+	3.1
+	
+val uniqueClass13DF = uniqueDF.filter($"Class" === "13")
+
+	4
+	
+val languageDF = df.filter($"Subject" === "english" || $"Subject" === "chinese")
+val averageLanguageGrade = languageDF.agg(avg($"Grade")).first().getDouble(0)
+
+	4.1
+	
+val mathematicsDF = df.filter($"Subject" === "mathematics")
+val averageMathematicsGrade = mathematicsDF.agg(avg($"Grade")).first().getDouble(0)
+
+	4.2
+	
+val englishDF = df.filter($"Subject" === "english")
+
+or
+val englishDF = languageDF.filter($"Subject" === "english")
+
+val averageEnglishGrade = englishDF.agg(avg($"Grade")).first().getDouble(0)
+
+	5
+
+val uniqueAverageGradeDF = df.groupBy("Name", "Age", "Gender").
+agg(avg($"Grade").alias("AverageGrade"))
+
+uniqueAverageGradeDF.show()
+
+	5.1
+	
+val Class12DF = df.filter($"Class" === "12")
+val uniqueClass12AverageGradeDF = Class12DF.groupBy("Class","Name", "Age", "Gender").
+agg(avg($"Grade").alias("AverageGrade"))
+
+uniqueClass12AverageGradeDF.show()
+
+	6
+	
+val Class12DF = df.filter($"Class" === "12")
+val Class12AverageGradeDF = Class12DF.
+agg(avg($"Grade").alias("AverageGradeOfClass12"))
+
+Class12AverageGradeDF.show()
+	
+	6.1
+	
+val manClass12DF = df.filter($"Class" === "12" && $"Gender" === "man")
+val manClass12AverageGradeDF = manClass12DF.
+agg(avg($"Grade").alias("AverageGradeOfManClass12"))
+
+manClass12AverageGradeDF.show()
+	
+	6.2
+	
+val womanClass12DF = df.filter($"Class" === "12" && $"Gender" === "woman")
+val womanClass12AverageGradeDF = womanClass12DF.
+agg(avg($"Grade").alias("AverageGradeOfWomanClass12"))
+
+womanClass12AverageGradeDF.show()
+
+	6.3
+	
+val manClass13DF = df.filter($"Class" === "13" && $"Gender" === "man")
+val manClass13AverageGradeDF = manClass13DF.
+agg(avg($"Grade").alias("AverageGradeOfManClass13"))
+
+manClass13AverageGradeDF.show()
+
+val womanClass13DF = df.filter($"Class" === "13" && $"Gender" === "woman")
+val womanClass13AverageGradeDF = womanClass13DF.
+agg(avg($"Grade").alias("AverageGradeOfWomanClass13"))
+
+womanClass13AverageGradeDF.show()
+
+	7
+	
+val highestChineseGrade = df.filter($"Subject" === "chinese").
+agg(max($"Grade").alias("MaxChineseGrade")).
+as[Double].
+first()
+
+	7.1
+	
+val lowestChineseGradeInClass12 = df.filter($"Class" === "12" && $"Subject" === "chinese").
+agg(min($"Grade").alias("MinChineseGrade")).
+as[Double].
+first()
+
+	7.2
+	
+val highestMathematicsGradeInClass13 = df.filter($"Class" === "13" && $"Subject" === "mathematics").
+agg(max($"Grade").alias("MaxChineseGrade")).
+as[Double].
+first()
+
+	8
+	
+import org.apache.spark.sql.functions._
+
+val womanScoreOver150InClass12 = df.filter($"Class" === 12 && $"Gender" === "woman" && $"Subject".isNotNull).
+groupBy("Name", "Age").
+agg(sum($"Grade").alias("totalScore")).
+filter($"totalScore" > 150)
+
+val numberOfGirls = womanScoreOver150InClass12.count()
+
+
+	9
+/*	
+val selectedStud = df.filter($"Subject" === "mathematics" && 
+$"Grade" >= 70 &&
+$"Age" >= 20)
+	
+val ScoreOver150MathOverOrEq70AgeOverOrEq20 = dfAlias.
+  join(selectedStudAlias, Seq("Name", "Age", "Gender"), "inner").
+  groupBy("Name", "Age", "Gender").
+  agg(
+    sum(col("df.Grade")).alias("totalScore"),
+    avg(col("df.Grade")).alias("AverageGrade")
+  ).
+  filter($"totalScore" > 150).
+  select($"Name", $"Age", $"Gender", $"AverageGrade")
+
+
+val numberOf = ScoreOver150MathOverOrEq70AgeOverOrEq20.count()
+*/
+
+val ageOver20 = df.filter($"Age" >= 15)
+
+
+val totalScoreAndAvgGrade = ageOver20.
+groupBy("Name", "Age", "Gender").
+agg(sum($"Grade").as("TotalGrade"), avg($"Grade").as("AvgGrade")) 
+
+
+val totalScoreOverEq150 = totalScoreAndAvgGrade.filter($"TotalGrade" >= 150)
+
+val totalScoreJoinedWithAgeFilter = totalScoreOverEq150.
+join(ageOver20, Seq("Name", "Age", "Gender"))
+
+
+val mathFiltered = totalScoreJoinedWithAgeFilter.
+filter($"Subject" === "mathematics" && $"Grade" >= 70)
+
+mathFiltered.show
