@@ -1,0 +1,138 @@
+val f = spark.read.json("file:///C:/Users/N1o/0projects/Spark/finaltest/test/data_2.json")
+f.show
+
+1
+Найдите все страны площадь которых превышает 30000
+ Выведи страны Карибского региона, площадь которых больше 200
+ Найди Andora и замени ее площадь на 555
+ Получить подтаблицу, содержащую только столбцы Континент и Регион
+
+
+1.1
+scala> val area = f.filter('Area > 30000)
+area: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Area: bigint, Continent: string ... 2 more fields]
+
+scala> area.show
++--------+------------+------------------+--------------------+
+|    Area|   Continent|              Name|              Region|
++--------+------------+------------------+--------------------+
+|  652090|        Asia|       Afghanistan|SouthernandCentra...|
+| 1246700|      Africa|            Angola|       CentralAfrica|
+|   83600|        Asia|unitedArabEmirates|          MiddleEast|
+| 2780400|SouthAmerica|         Argentina|        SouthAmerica|
+|13120000|  Antarctica|        Antarctica|          Antarctica|
+| 7741220|     Oceania|         Australia|AustraliaandNewZe...|
++--------+---
+
+1.2
+
+scala> val area = f.filter('Region === "Caribbean" &&'Area > 200)
+area: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Area: bigint, Continent: string ... 2 more fields]
+
+scala> area.show
++----+------------+-------------------+---------+
+|Area|   Continent|               Name|   Region|
++----+------------+-------------------+---------+
+| 800|NorthAmerica|NetherlandsAntilles|Caribbean|
+| 442|NorthAmerica|  AntiguaandBarbuda|Caribbean|
++----+------------+-------------------+---------+
+
+1.4
+scala> val a = f.select('Continent, 'Region)
+a: org.apache.spark.sql.DataFrame = [Continent: string, Region: string]
+
+scala> a.show
++------------+--------------------+
+|   Continent|              Region|
++------------+--------------------+
+|NorthAmerica|           Caribbean|
+|        Asia|SouthernandCentra...|
+|      Africa|       CentralAfrica|
+|NorthAmerica|           Caribbean|
+|      Europe|      SouthernEurope|
+|      Europe|      SouthernEurope|
+|NorthAmerica|           Caribbean|
+|        Asia|          MiddleEast|
+|SouthAmerica|        SouthAmerica|
+|        Asia|          MiddleEast|
+|     Oceania|           Polynesia|
+|  Antarctica|          Antarctica|
+|  Antarctica|          Antarctica|
+|NorthAmerica|           Caribbean|
+|     Oceania|AustraliaandNewZe...|
++------------+--------------------+
+
+
+
+1.3
+
+scala> val r = f.withColumn("Area", when(col("Name")==="Andorra", lit(555)).otherwise(col("Area")))
+
+r: org.apache.spark.sql.DataFrame = [Area: bigint, Continent: string ... 2 more fields]
+
+scala> r.show
++--------+------------+--------------------+--------------------+
+|    Area|   Continent|                Name|              Region|
++--------+------------+--------------------+--------------------+
+|     193|NorthAmerica|               Aruba|           Caribbean|
+|  652090|        Asia|         Afghanistan|SouthernandCentra...|
+| 1246700|      Africa|              Angola|       CentralAfrica|
+|      96|NorthAmerica|            Anguilla|           Caribbean|
+|   28748|      Europe|             Albania|      SouthernEurope|
+|     555|      Europe|             Andorra|      SouthernEurope|
+
+
+2.
+В заданном файле RDD.txt подсчитать количество строк, удалить пустые строки, 
+посчитать количество вхождений заданного слова.
+2. Даны два списка типа ключ(string) –значение(int) (составить самостоятельно) 
+длиной 3 и 5. Со списками проделать следующие действия:
+ объединить 2 списка;
+ агрегировать по ключу;
+ сортировать в порядке убывания
+
+2.1
+
+val f = sc.textFile("file:///C:/Users/N1o/0projects/Spark/finaltest/test/RDD1.txt")
+
+f.collect.foreach(println)
+
+scala> val c = f.zipWithIndex().count
+c: Long = 16
+
+scala> val noE = f.filter{case(x)=>x.nonEmpty}
+noE: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[24] at filter at <console>:23
+
+scala> noE.collect.foreach(println)
+
+scala> val cw = f.flatMap(_.split("\\s+")).filter(_ == word).count
+cw: Long = 9
+
+2.2
+
+
+val ll1 = List(("apple1", 1),("apple2", 2),("apple3", 3))
+val ll2 = List(("apple1", 1),("apple2", 2),("apple3", 3),("apple5", 5),("apple5", 5))
+
+val l1 = sc.parallelize(ll1)
+val l2 = sc.parallelize(ll2)
+
+val u = l1.union(l2)
+val a = u.reduceByKey(_+_)
+val s = a.sortBy(_._2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

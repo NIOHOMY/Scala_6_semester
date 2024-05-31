@@ -1,0 +1,149 @@
+Задание 1: Вариант 1
+Дана таблица результатов,
+Студент (индекс строки): Люси, Том, Джек, Мери, Тони, Кети, Поли
+Предмет (индекс столбца): Java, Python, PHP
+Пол (индекс столбца) :m, w
+Имя РНP Java Python пол
+Luсy 60 78 80 w
+Tom 90 58 71 m
+Mary 77 85 68 w
+Tony 84 76 65 m
+Katy 58 70 62 w
+Jack 81 90 86 m
+Poly 85 77 90 w
+
+ Найдите имена всех студентов, чей рейтинг по Java превышает 60%
+ Найти информацию обо всех студентах, у которых оценка по питону выше среднего
+ Найди Джек и замени очки по PHP на 5 
+ Получить подтаблицу, содержащую только столбцы name и python
+
+Задание 2: Используя RDD
+1. В заданном файле RDD.txt подсчитать количество строк, удалить пустые строки, 
+посчитать количество вхождений заданного слова.
+2. Даны два списка типа ключ(string) –значение(int) (составить самостоятельно) 
+длиной 3 и 5. Со списками проделать следующие действия:
+ объединить 2 списка;
+ агрегировать по ключу;
+ сортировать в порядке убывания
+
+val f = spark.read.json("file:///C:/Users/N1o/0projects/Spark/finaltest/test/data_1.json")
+
+1.1
+val java = f.filter('Java >= 60)
+
+1.2
+scala> val av = f.agg(avg('Python)).first.getDouble(0)
+av: Double = 74.57142857142857
+
+scala> val p = f.filter('Python > av)
+
+1.3
+
+scala> val updatedDF = f.withColumn("PHP", when(col("Name") === "Jack", lit(5)).otherwise(col("PHP")))
+updatedDF: org.apache.spark.sql.DataFrame = [Gender: string, Java: bigint ... 3 more fields]
+
+scala> updatedDF.show
++------+----+----+---+------+
+|Gender|Java|Name|PHP|Python|
++------+----+----+---+------+
+|     w|  78|Lucy| 60|    80|
+|     m|  58| Tom| 90|    71|
+|     w|  85|Mary| 77|    68|
+|     m|  76|Tony| 84|    65|
+|     w|  70|Katy| 58|    62|
+|     m|  90|Jack|  5|    86|
+|     w|  77|Poly| 85|    90|
++------+----+----+---+------+
+
+1.4
+
+scala> val subTable = f.select("Name", "Python")
+subTable: org.apache.spark.sql.DataFrame = [Name: string, Python: bigint]
+
+scala> subTable.show
++----+------+
+|Name|Python|
++----+------+
+|Lucy|    80|
+| Tom|    71|
+|Mary|    68|
+|Tony|    65|
+|Katy|    62|
+|Jack|    86|
+|Poly|    90|
++----+------+
+
+
+
+val f = sc.textFile("file:///C:/Users/N1o/0projects/Spark/finaltest/test/RDD1.txt")
+f.collect.foreach(println)
+
+2.1
+
+//Количество строк
+scala> val lineC = f.zipWithIndex
+lineC: org.apache.spark.rdd.RDD[(String, Long)] = ZippedWithIndexRDD[66] at zipWithIndex at <console>:23
+
+scala> lineC.count
+res14: Long = 15
+
+//Убрать пустые
+val noE = f.filter{case(x)=>x.nonEmpty}
+val noEmpty = lineC.filter{case(x,y)=>x.nonEmpty}
+
+//Найти количество вхождения слова
+val word = "Spark"
+
+val noSpace = f.flatMap(_.split("\\s+"))
+noSpace: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[73] at flatMap at <console>:23
+
+noSpace.collect.foreach(println)
+
+val c = noSpace.filter(_.toLowerCase == word.toLowerCase).count
+
+// Считаем количество вхождений каждого слова
+val wordCounts = words.map(word => (word, 1)).reduceByKey(_ + _)
+
+
+
+2.2
+
+import org.apache.spark.rdd.RDD
+
+// Создаем два списка ключ-значение
+val list1 = List(("apple", 5), ("banana", 3), ("orange", 7))
+val list2 = List(("apple", 2), ("kiwi", 4), ("peach", 6), ("banana", 1), ("grape", 8))
+
+// Преобразуем списки в RDD
+val rdd1: RDD[(String, Int)] = sc.parallelize(list1)
+val rdd2: RDD[(String, Int)] = sc.parallelize(list2)
+
+// Объединяем два RDD
+val combinedRDD = rdd1.union(rdd2)
+
+// Агрегируем по ключу
+val aggregatedRDD = combinedRDD.reduceByKey(_ + _)
+
+// Сортируем в порядке убывания
+scala> val s = agr.sortBy(_._2, false)
+s: org.apache.spark.rdd.RDD[(Int, Int)] = MapPartitionsRDD[86] at sortBy at <console>:23
+
+scala> s.collect.foreach(println)
+(3,8)
+(2,6)
+(5,6)
+(4,5)
+(1,4)
+
+scala> val s = agr.sortBy(_._1, false)
+s: org.apache.spark.rdd.RDD[(Int, Int)] = MapPartitionsRDD[91] at sortBy at <console>:23
+
+scala> s.collect.foreach(println)
+(5,6)
+(4,5)
+(3,8)
+(2,6)
+(1,4)
+
+// Выводим результат
+sortedRDD.collect().foreach(println)

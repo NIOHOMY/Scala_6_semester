@@ -1,0 +1,167 @@
+Задание 1: Вариант 3
+Дана таблица,
+Country Region Population Area
+Afghanistan ASIA 31056997 647500
+Albania EUROPA 3581655 28748
+Algeria AFRIKA 3293 83859
+American Samoa OCEANIA 581730 86600
+Angola AFRICA 622984 27834
+Andorra EUROPA 58190 30518
+Argentina LATIN AMERICA 3542697 112622
+Australia OCEANIA 789228 274000
+Bahrein NEAR EAST 25896 143998
+Bangladesh ASIA 45632 110994
+Barbados LATIN AMERICA 25891 83859
+Belarus EUROPE 45628 86600
+Syria NEAR EAST 892113 27834
+ Найдите имена Страны население которых превышает 75000
+ Найти Страны Ближнего Востока и Африки площадь которых выше средней площади 
+этих стран
+ Найди Bahrein и замени его численность на 999
+ Получить подтаблицу, содержащую только столбцы Country и Area
+Задание 2: Используя RDD
+1. В заданном файле RDD.txt подсчитать количество строк, удалить пустые строки, 
+посчитать количество вхождений заданного слова.
+2. Даны два списка типа ключ(string) –значение(int) (составить самостоятельно) 
+длиной 3 и 5. Со списками проделать следующие действия:
+ объединить 2 списка;
+ агрегировать по ключу;
+ сортировать в порядке убывания
+
+1.1
+
+val f = spark.read.json("file:///C:/Users/N1o/0projects/Spark/finaltest/test/data_3.json")
+
+f.show
+
+scala> val c = f.filter('Population > 75000)
+c: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Area: bigint, Country: string ... 2 more fields]
+
+scala> c.select('Country)
+res5: org.apache.spark.sql.DataFrame = [Country: string]
+
+scala> res5.show
++--------------+
+|       Country|
++--------------+
+|   Afghanistan|
+|       Albania|
+|American Samoa|
+|        Angola|
+|     Argentina|
+|     Australia|
+|         Syria|
++--------------+
+
+1.2
+
+
+scala> val c = f.filter('Region === "AFRIKA" || 'Region === "NEAR EAST")
+c: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Area: bigint, Country: string ... 2 more fields]
+
+scala> val av = c.agg(avg('Area)).first.getDouble(0)
+av: Double = 85230.33333333333
+
+scala> val g = c.filter('Area > av)
+g: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Area: bigint, Country: string ... 2 more fields]
+
+scala> g.show
++------+-------+----------+---------+
+|  Area|Country|Population|   Region|
++------+-------+----------+---------+
+|143998|Bahrein|     25896|NEAR EAST|
++------+-------+----------+---------+
+
+1.4
+
+scala> val u = f.select('Country, 'Area)
+u: org.apache.spark.sql.DataFrame = [Country: string, Area: bigint]
+
+scala> u.show
++--------------+------+
+|       Country|  Area|
++--------------+------+
+|   Afghanistan|647500|
+|       Albania| 28748|
+|       Algeria| 83859|
+|American Samoa| 86600|
+|        Angola| 27834|
+|       Andorra| 30518|
+|     Argentina|112622|
+|     Australia|274000|
+|       Bahrein|143998|
+|    Bangladesh|110994|
+|      Barbados| 83859|
+|       Belarus| 86600|
+|         Syria| 27834|
++--------------+------+
+
+
+1.3
+
+scala> val y = f.withColumn("Population", when(col("Country")==="Bahrein", lit(999)).otherwise(col(
+"Population")))
+y: org.apache.spark.sql.DataFrame = [Area: bigint, Country: string ... 2 more fields]
+
+scala> y.show
++------+--------------+----------+-------------+
+|  Area|       Country|Population|       Region|
++------+--------------+----------+-------------+
+|647500|   Afghanistan|  31056997|         ASIA|
+| 28748|       Albania|   3581655|       EUROPA|
+| 83859|       Algeria|      3293|       AFRIKA|
+| 86600|American Samoa|    581730|      OCEANIA|
+| 27834|        Angola|    622984|       AFRICA|
+| 30518|       Andorra|     58190|       EUROPA|
+|112622|     Argentina|   3542697|LATIN AMERICA|
+|274000|     Australia|    789228|      OCEANIA|
+|143998|       Bahrein|       999|    NEAR EAST|
+|110994|    Bangladesh|     45632|         ASIA|
+| 83859|      Barbados|     25891|LATIN AMERICA|
+| 86600|       Belarus|     45628|       EUROPE|
+| 27834|         Syria|    892113|    NEAR EAST|
++------+--------------+----------+-------------+
+
+2.2
+
+
+
+.collect.foreach(println)
+
+scala> val c = f.zipWithIndex.count
+c: Long = 16
+
+scala> val noE = f.filter{case(x)=>x.nonEmpty}
+
+scala> val c = f.flatMap(_.split("\\s+")).filter{case(x)=>x==word}.count
+c: Long = 9
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

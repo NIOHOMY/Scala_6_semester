@@ -1,0 +1,503 @@
+C:\Users\N1o\0projects\Spark\spark-3.5.1-bin-hadoop3\bin\spark-shell
+
+val f = sc.textFile("file:///C:/Users/N1o/0projects/Spark/labs/test/pakhomova.txt")
+
+f.collect.foreach(println)
+
+```
+123 sdw ff  efsdf
+sdds  dwdw wd 4545
+cs
+```
+
+val word = "dwdw"
+
+``````````````````````````````find````````````````````````````````
+
+val numbered = f.zipWithIndex
+
+numbered.collect.foreach(println)
+```
+(123 sdw ff  efsdf,0)
+(sdds  dwdw wd 4545,1)
+(cs,2)
+```
+
+val numberedFiltered = numbered.filter {case (line, _) => line.contains(word)}
+
+numberedFiltered.collect.foreach(println)
+```
+(sdds  dwdw wd 4545,1)
+```
+
+val linesNumbers = numberedFiltered.map{ case(_, number) => number}
+ 
+linesNumbers.collect.foreach(println)
+```
+1
+```
+
+
+numbered.collect.foreach(println)
+(123 sdw ff  efsdf,0)
+(sdds  dwdw wd 4545,1)
+(,2)
+(,3)
+(cs,4)
+
+val filteredIndexes = numbered.flatMap { case (line, index) =>
+line.split("\\s+").zipWithIndex.filter { case (w, _) => w == word }.
+map { case (_, i) => (index, i)
+}}
+
+filteredIndexes.foreach(println)
+```
+(1,1)
+```
+```````````````````````````````count```````````````````````````````
+
+
+val noSpace = f.flatMap(_.split("\\s+"))
+
+noSpace.collect.foreach(println)
+```
+123
+sdw
+ff
+efsdf
+sdds
+dwdw
+wd
+4545
+cs
+```
+
+val filtered = noSpace.filter{ case(x) => x == word}
+
+val c = filtered.count
+```
+c: Long = 1
+```
+
+```````````````````````````````remove empty lines```````````````````````````````
+
+val noSpace = f.flatMap(_.split("\\s+"))
+
+noSpace.collect.foreach(println)
+```
+123
+sdw
+ff
+efsdf
+sdds
+dwdw
+wd
+4545
+
+
+cs
+```
+
+val noempty = noSpace.filter{case(x) => x.nonEmpty}
+
+noempty.collect().foreach(println)
+```
+123
+sdw
+ff
+efsdf
+sdds
+dwdw
+wd
+4545
+cs
+```
+
+````````````````````````Other`````````````````````````
+
+val array1 = Array(("a", 1), ("b", 2), ("c", 3))
+val array2 = Array(("a", 4), ("b", 5), ("c", 6))
+
+val rdd1 = sc.parallelize(array1)
+val rdd2 = sc.parallelize(array2)
+
+val reducedRDD = rdd1.union(rdd2).reduceByKey(_ + _)
+
+val mappedRDD = reducedRDD.mapValues(_ + 10)
+
+reducedRDD.collect().foreach(println)
+(a,5)
+(b,7)
+(c,9)
+
+mappedRDD.collect().foreach(println)
+(a,15)
+(b,17)
+(c,19)
+
+scala> val indexedRDD = ziped.zipWithIndex.map(_.swap)
+indexedRDD: org.apache.spark.rdd.RDD[(Long, (String, Long))] = MapPartitionsRDD[4] at map at <console>:23
+
+scala> val sortedRDD = indexedRDD.sortByKey(false)
+sortedRDD: org.apache.spark.rdd.RDD[(Long, (String, Long))] = ShuffledRDD[7] at sortByKey at <console>:23
+
+scala> sortedRDD.collect.foreach(println)
+(4,(cs,4))
+(3,(,3))
+(2,(,2))
+(1,(sdds  dwdw wd 4545,1))
+(0,(123 sdw ff  efsdf,0))
+
+
+```````````````````````````DataFrame``````````````````````````
+
+scala> val df = spark.read.json("file:///C:/Users/N1o/0projects/Spark/labs/data.json")
+df: org.apache.spark.sql.DataFrame = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> df.show(27)
++---+-----+------+-----+--------+-----------+
+|Age|Class|Gender|Grade|    Name|    Subject|
++---+-----+------+-----+--------+-----------+
+| 25|   12|   man|   50|  Ivanov|    chinese|
+| 25|   12|   man|   60|  Ivanov|mathematics|
+| 25|   12|   man|   70|  Ivanov|    english|
+| 20|   12|   man|   50|  Petrov|    chinese|
+| 20|   12|   man|   50|  Petrov|mathematics|
+| 20|   12|   man|   50|  Petrov|    english|
+| 19|   12| woman|   70|Sidorova|    chinese|
+| 19|   12| woman|   70|Sidorova|mathematics|
+| 19|   12| woman|   70|Sidorova|    english|
+| 25|   12|   man|   50|   Lunin|    chinese|
+| 25|   12|   man|   60|   Lunin|mathematics|
+| 25|   12|   man|   70|   Lunin|    english|
+| 25|   13|   man|   60|Yakovlev|    chinese|
+| 25|   13|   man|   60|Yakovlev|mathematics|
+| 25|   13|   man|   70|Yakovlev|    english|
+| 20|   13|   man|   50|  Volkov|    chinese|
+| 20|   13|   man|   60|  Volkov|mathematics|
+| 20|   13|   man|   50|  Volkov|    english|
+| 19|   13| woman|   70|Zaitseva|    chinese|
+| 19|   13| woman|   80|Zaitseva|mathematics|
+| 19|   13| woman|   70|Zaitseva|    english|
+| 20|   13|   man|   30|Lisitsin|    chinese|
+| 20|   13|   man|   60|Lisitsin|mathematics|
+| 20|   13|   man|   50|Lisitsin|    english|
+| 18|   13| women|   70|Sorokina|    chinese|
+| 18|   13| women|   80|Sorokina|mathematics|
+| 18|   13| women|   70|Sorokina|    ?nglish|
++---+-----+------+-----+--------+-----------+
+
+
+scala> val uniqueDF = df.dropDuplicates(Seq("Name", "Age", "Gender"))
+uniqueDF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> val uniqueTestPassersCount = uniqueDF.count()
+uniqueTestPassersCount: Long = 9
+
+scala> println(s"Number of unique people who took the test: $uniqueTestPassersCount")
+Number of unique people who took the test: 9
+
+scala> val countUnder20 = uniqueDF.filter($"Age" < 20).count()
+countUnder20: Long = 3
+
+scala> val countEq20 = uniqueDF.filter($"Age" === 20).count()
+countEq20: Long = 3
+
+scala> val countOver20 = uniqueDF.filter($"Age" < 20).count()
+countOver20: Long = 3
+
+scala> val uniqueManDF = df.filter($"Gender" === "man").dropDuplicates(Seq("Name", "Age"))
+uniqueManDF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala>
+
+scala> uniqueManDF.show
++---+-----+------+-----+--------+-------+
+|Age|Class|Gender|Grade|    Name|Subject|
++---+-----+------+-----+--------+-------+
+| 25|   12|   man|   50|  Ivanov|chinese|
+| 20|   13|   man|   30|Lisitsin|chinese|
+| 25|   12|   man|   50|   Lunin|chinese|
+| 20|   12|   man|   50|  Petrov|chinese|
+| 20|   13|   man|   50|  Volkov|chinese|
+| 25|   13|   man|   60|Yakovlev|chinese|
++---+-----+------+-----+--------+-------+
+
+
+scala> val uniqueWomanDF = df.filter($"Gender" === "woman").dropDuplicates(Seq("Name", "Age"))
+uniqueWomanDF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala>
+
+scala> uniqueWomanDF.show
++---+-----+------+-----+--------+-------+
+|Age|Class|Gender|Grade|    Name|Subject|
++---+-----+------+-----+--------+-------+
+| 19|   12| woman|   70|Sidorova|chinese|
+| 19|   13| woman|   70|Zaitseva|chinese|
++---+-----+------+-----+--------+-------+
+
+
+scala> val uniqueClass12DF = uniqueDF.filter($"Class" === "12")
+uniqueClass12DF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> uniqueClass12DF.show
++---+-----+------+-----+--------+-------+
+|Age|Class|Gender|Grade|    Name|Subject|
++---+-----+------+-----+--------+-------+
+| 25|   12|   man|   50|  Ivanov|chinese|
+| 25|   12|   man|   50|   Lunin|chinese|
+| 20|   12|   man|   50|  Petrov|chinese|
+| 19|   12| woman|   70|Sidorova|chinese|
++---+-----+------+-----+--------+-------+
+
+
+scala> val uniqueClass13DF = uniqueDF.filter($"Class" === "13")
+uniqueClass13DF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> uniqueClass13DF.show
++---+-----+------+-----+--------+-------+
+|Age|Class|Gender|Grade|    Name|Subject|
++---+-----+------+-----+--------+-------+
+| 20|   13|   man|   30|Lisitsin|chinese|
+| 18|   13| women|   70|Sorokina|chinese|
+| 20|   13|   man|   50|  Volkov|chinese|
+| 25|   13|   man|   60|Yakovlev|chinese|
+| 19|   13| woman|   70|Zaitseva|chinese|
++---+-----+------+-----+--------+-------+
+
+
+scala> val languageDF = df.filter($"Subject" === "english" || $"Subject" === "chinese")
+languageDF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> val averageLanguageGrade = languageDF.agg(avg($"Grade")).first().getDouble(0)
+averageLanguageGrade: Double = 58.8235294117647
+
+scala> val mathematicsDF = df.filter($"Subject" === "mathematics")
+mathematicsDF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> val averageMathematicsGrade = mathematicsDF.agg(avg($"Grade")).first().getDouble(0)
+averageMathematicsGrade: Double = 64.44444444444444
+
+scala>
+
+scala> val englishDF = df.filter($"Subject" === "english")
+englishDF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> val averageEnglishGrade = englishDF.agg(avg($"Grade")).first().getDouble(0)
+averageEnglishGrade: Double = 62.5
+
+scala>
+
+scala> val uniqueAverageGradeDF = df.groupBy("Name", "Age", "Gender").
+     | agg(avg($"Grade").alias("AverageGrade"))
+uniqueAverageGradeDF: org.apache.spark.sql.DataFrame = [Name: string, Age: bigint ... 2 more fields]
+
+scala>
+
+scala> uniqueAverageGradeDF.show()
++--------+---+------+------------------+
+|    Name|Age|Gender|      AverageGrade|
++--------+---+------+------------------+
+|  Volkov| 20|   man|53.333333333333336|
+|Yakovlev| 25|   man|63.333333333333336|
+|Lisitsin| 20|   man|46.666666666666664|
+|  Petrov| 20|   man|              50.0|
+|  Ivanov| 25|   man|              60.0|
+|Sorokina| 18| women| 73.33333333333333|
+|   Lunin| 25|   man|              60.0|
+|Sidorova| 19| woman|              70.0|
+|Zaitseva| 19| woman| 73.33333333333333|
++--------+---+------+------------------+
+
+
+scala> val Class12DF = df.filter($"Class" === "12")
+Class12DF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> val uniqueClass12AverageGradeDF = Class12DF.groupBy("Class","Name", "Age", "Gender").
+     | agg(avg($"Grade").alias("AverageGrade"))
+uniqueClass12AverageGradeDF: org.apache.spark.sql.DataFrame = [Class: bigint, Name: string ... 3 more fields]
+
+scala>
+
+scala> uniqueClass12AverageGradeDF.show()
++-----+--------+---+------+------------+
+|Class|    Name|Age|Gender|AverageGrade|
++-----+--------+---+------+------------+
+|   12|   Lunin| 25|   man|        60.0|
+|   12|  Petrov| 20|   man|        50.0|
+|   12|Sidorova| 19| woman|        70.0|
+|   12|  Ivanov| 25|   man|        60.0|
++-----+--------+---+------+------------+
+
+
+scala>
+
+scala> val Class12DF = df.filter($"Class" === "12")
+Class12DF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> val Class12AverageGradeDF = Class12DF.
+     | agg(avg($"Grade").alias("AverageGradeOfClass12"))
+Class12AverageGradeDF: org.apache.spark.sql.DataFrame = [AverageGradeOfClass12: double]
+
+scala>
+
+scala> Class12AverageGradeDF.show()
++---------------------+
+|AverageGradeOfClass12|
++---------------------+
+|                 60.0|
++---------------------+
+
+
+scala> val manClass12DF = df.filter($"Class" === "12" && $"Gender" === "man")
+manClass12DF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> val manClass12AverageGradeDF = manClass12DF.
+     | agg(avg($"Grade").alias("AverageGradeOfManClass12"))
+manClass12AverageGradeDF: org.apache.spark.sql.DataFrame = [AverageGradeOfManClass12: double]
+
+scala>
+
+scala> manClass12AverageGradeDF.show()
++------------------------+
+|AverageGradeOfManClass12|
++------------------------+
+|      56.666666666666664|
++------------------------+
+
+
+scala> val womanClass12DF = df.filter($"Class" === "12" && $"Gender" === "woman")
+womanClass12DF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> val womanClass12AverageGradeDF = womanClass12DF.
+     | agg(avg($"Grade").alias("AverageGradeOfWomanClass12"))
+womanClass12AverageGradeDF: org.apache.spark.sql.DataFrame = [AverageGradeOfWomanClass12: double]
+
+scala>
+
+scala> womanClass12AverageGradeDF.show()
++--------------------------+
+|AverageGradeOfWomanClass12|
++--------------------------+
+|                      70.0|
++--------------------------+
+
+
+scala> val manClass13DF = df.filter($"Class" === "13" && $"Gender" === "man")
+manClass13DF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> val manClass13AverageGradeDF = manClass13DF.
+     | agg(avg($"Grade").alias("AverageGradeOfManClass13"))
+manClass13AverageGradeDF: org.apache.spark.sql.DataFrame = [AverageGradeOfManClass13: double]
+
+scala>
+
+scala> manClass13AverageGradeDF.show()
++------------------------+
+|AverageGradeOfManClass13|
++------------------------+
+|       54.44444444444444|
++------------------------+
+
+
+scala>
+
+scala> val womanClass13DF = df.filter($"Class" === "13" && $"Gender" === "woman")
+womanClass13DF: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala> val womanClass13AverageGradeDF = womanClass13DF.
+     | agg(avg($"Grade").alias("AverageGradeOfWomanClass13"))
+womanClass13AverageGradeDF: org.apache.spark.sql.DataFrame = [AverageGradeOfWomanClass13: double]
+
+scala>
+
+scala> womanClass13AverageGradeDF.show()
++--------------------------+
+|AverageGradeOfWomanClass13|
++--------------------------+
+|         73.33333333333333|
++--------------------------+
+
+
+scala> val highestChineseGrade = df.filter($"Subject" === "chinese").
+     | agg(max($"Grade").alias("MaxChineseGrade")).
+     | as[Double].
+     | first()
+highestChineseGrade: Double = 70.0
+
+scala> val lowestChineseGradeInClass12 = df.filter($"Class" === "12" && $"Subject" === "chinese").
+     | agg(min($"Grade").alias("MinChineseGrade")).
+     | as[Double].
+     | first()
+lowestChineseGradeInClass12: Double = 50.0
+
+scala> val highestMathematicsGradeInClass13 = df.filter($"Class" === "13" && $"Subject" === "mathematics").
+     | agg(max($"Grade").alias("MaxChineseGrade")).
+     | as[Double].
+     | first()
+highestMathematicsGradeInClass13: Double = 80.0
+
+scala> import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions._
+
+scala>
+
+scala> val womanScoreOver150InClass12 = df.filter($"Class" === 12 && $"Gender" === "woman" && $"Subject".isNotNull).
+     | groupBy("Name", "Age").
+     | agg(sum($"Grade").alias("totalScore")).
+     | filter($"totalScore" > 150)
+womanScoreOver150InClass12: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Name: string, Age: bigint ... 1 more field]
+
+scala>
+
+scala> val numberOfGirls = womanScoreOver150InClass12.count()
+numberOfGirls: Long = 1
+
+scala> val ageOver20 = df.filter($"Age" >= 15)
+ageOver20: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Age: bigint, Class: bigint ... 4 more fields]
+
+scala>
+
+scala>
+
+scala> val totalScoreAndAvgGrade = ageOver20.
+     | groupBy("Name", "Age", "Gender").
+     | agg(sum($"Grade").as("TotalGrade"), avg($"Grade").as("AvgGrade"))
+totalScoreAndAvgGrade: org.apache.spark.sql.DataFrame = [Name: string, Age: bigint ... 3 more fields]
+
+scala>
+
+scala>
+
+scala> val totalScoreOverEq150 = totalScoreAndAvgGrade.filter($"TotalGrade" >= 150)
+totalScoreOverEq150: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Name: string, Age: bigint ... 3 more fields]
+
+scala>
+
+scala> val totalScoreJoinedWithAgeFilter = totalScoreOverEq150.
+     | join(ageOver20, Seq("Name", "Age", "Gender"))
+totalScoreJoinedWithAgeFilter: org.apache.spark.sql.DataFrame = [Name: string, Age: bigint ... 6 more fields]
+
+scala>
+
+scala>
+
+scala> val mathFiltered = totalScoreJoinedWithAgeFilter.
+     | filter($"Subject" === "mathematics" && $"Grade" >= 70)
+mathFiltered: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [Name: string, Age: bigint ... 6 more fields]
+
+scala>
+
+scala> mathFiltered.show
++--------+---+------+----------+-----------------+-----+-----+-----------+
+|    Name|Age|Gender|TotalGrade|         AvgGrade|Class|Grade|    Subject|
++--------+---+------+----------+-----------------+-----+-----+-----------+
+|Sidorova| 19| woman|       210|             70.0|   12|   70|mathematics|
+|Zaitseva| 19| woman|       220|73.33333333333333|   13|   80|mathematics|
+|Sorokina| 18| women|       220|73.33333333333333|   13|   80|mathematics|
++--------+---+------+----------+-----------------+-----+-----+-----------+
+
+
+scala> mathFiltered.count
+res14: Long = 3
