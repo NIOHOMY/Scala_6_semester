@@ -95,7 +95,7 @@
 
 ##
 
-<h2>Основные команды</h2>
+<h2  align="center">Основные команды</h2>
 
 ```scala
 C:\Users\N1o\0projects\Spark\spark-3.5.1-bin-hadoop3\bin\spark-shell
