@@ -1,0 +1,145 @@
+scala> val personRDD =sc.textFile("file:///C:/Users/N1o/0projects/Spark/people1.txt")
+personRDD: org.apache.spark.rdd.RDD[String] = file:///C:/Users/N1o/0projects/Spark/people1.txt MapPartitionsRDD[11] at textFile at <console>:23
+
+scala>  personRDD.collect
+res5: Array[String] = Array("zhangsan, 1 ", "lisi, 10 ", wangwu, 20, zhaoliu, 30)
+
+scala> personRDD.map{x => val per = x.split(",") ; (per(0),per(1).trim.toInt)}.toDF("name","age")
+res6: org.apache.spark.sql.DataFrame = [name: string, age: int]
+
+scala> res6.show
++--------+---+
+|    name|age|
++--------+---+
+|zhangsan|  1|
+|    lisi| 10|
+|  wangwu| 20|
+| zhaoliu| 30|
++--------+---+
+
+
+
+scala> val df = spark.read.json("file:///C:/Users/N1o/0projects/Spark/people1.json")
+df: org.apache.spark.sql.DataFrame = [_corrupt_record: string, name: string ... 1 more field]
+
+scala> val rdd1 = df.rdd
+rdd1: org.apache.spark.rdd.RDD[org.apache.spark.sql.Row] = MapPartitionsRDD[47] at rdd at <console>:23
+
+scala>  rdd1.collect
+res16: Array[org.apache.spark.sql.Row] = Array([[,null,null], [null,zhangsan,1], [null,lisi,10], [null,wangwu,20], [null,zhaoliu,30], [],null,null])
+
+
+scala> val personRDD =sc.textFile("file:///C:/Users/N1o/0projects/Spark/people1.txt")
+personRDD: org.apache.spark.rdd.RDD[String] = file:///C:/Users/N1o/0projects/Spark/people1.txt MapPartitionsRDD[29] at textFile at <console>:23
+
+scala> case class Person(name:String,age:Long)
+defined class Person
+
+scala> personRDD.map{x => val per = x.split(",") ; Person(per(0),per(1).trim.toInt)}.toDS()
+res12: org.apache.spark.sql.Dataset[Person] = [name: string, age: bigint]
+
+scala> res12.show
++--------+---+
+|    name|age|
++--------+---+
+|zhangsan|  1|
+|    lisi| 10|
+|  wangwu| 20|
+| zhaoliu| 30|
++--------+---+
+
+
+scala>  case class Person(name:String,age:Long)
+defined class Person
+
+scala>  val ds = Seq(Person("Andy",32)).toDS()
+ds: org.apache.spark.sql.Dataset[Person] = [name: string, age: bigint]
+
+scala> val rdd2 = ds.rdd
+rdd2: org.apache.spark.rdd.RDD[Person] = MapPartitionsRDD[38] at rdd at <console>:23
+
+scala>  rdd2.collect
+res15: Array[Person] = Array(Person(Andy,32))
+
+
+scala> val textFile = spark.read.text("file:///C:/Users/N1o/0projects/Spark/README.md")
+textFile: org.apache.spark.sql.DataFrame = [value: string]
+
+scala> textFile.printSchema
+root
+ |-- value: string (nullable = true)
+
+
+scala> textFile.show(5, false)
++----------------------------------------------------------------------------------------------------------------------------+
+|value                                                                                                                       |
++----------------------------------------------------------------------------------------------------------------------------+
+|# Weather Application                                                                                                       |
+|                                                                                                                            |
+|- A weather forecast app that makes it easy to get information about current and future weather conditions using weatherapi.|
+|- Access a 5-day weather forecast to plan ahead.                                                                            |
+|- Get weather updates for a variety of cities, allowing you to stay informed about conditions worldwide.                    |
++----------------------------------------------------------------------------------------------------------------------------+
+only showing top 5 rows
+
+
+scala> val nm = spark.read.option("header","true").csv("file:///C:/Users/N1o/0projects/Spark/foreign_names.csv")
+nm: org.apache.spark.sql.DataFrame = [id;name;gender;BirtDate;Division;Salary: string]
+
+scala> nm.printSchema
+root
+ |-- id;name;gender;BirtDate;Division;Salary: string (nullable = true)
+
+
+scala> val nm2 = spark.read.option("header","true").option("inferSchema","true").csv("file:///C:/Users/N1o/0projects/Spark/foreign_names.csv")
+nm2: org.apache.spark.sql.DataFrame = [id;name;gender;BirtDate;Division;Salary: string]
+
+
+scala> nm2.printSchema
+root
+ |-- id;name;gender;BirtDate;Division;Salary: string (nullable = true)
+
+
+scala> import org.apache.spark.sql.types._
+import org.apache.spark.sql.types._
+
+scala> val nm3 = spark.read.option("header","true").schema(foreign_names).csv("file:///C:/Users/N1o
+/0projects/Spark/foreign_names.csv")
+<console>:25: error: not found: value foreign_names
+       val nm3 = spark.read.option("header","true").schema(foreign_names).csv("file:///C:/Users/N1o/0projects/Spark/foreign_names.csv")
+	   
+scala> import org.apache.spark.sql.functions
+import org.apache.spark.sql.functions
+
+scala> val kvDF = Seq((1,2),(2,3)).toDF("key","value")
+kvDF: org.apache.spark.sql.DataFrame = [key: int, value: int]
+
+scala> kvDF.columns
+res23: Array[String] = Array(key, value)
+
+scala> kvDF.select("key")
+res25: org.apache.spark.sql.DataFrame = [key: int]
+
+scala> kvDF.select(col("key"))
+res26: org.apache.spark.sql.DataFrame = [key: int]
+
+scala> kvDF.select(column("key"))
+res27: org.apache.spark.sql.DataFrame = [key: int]
+
+scala> kvDF.select($"key")
+res28: org.apache.spark.sql.DataFrame = [key: int]
+scala> kvDF.select('key)
+res29: org.apache.spark.sql.DataFrame = [key: int]
+
+scala> kvDF.select(kvDF.col("key"))
+res30: org.apache.spark.sql.DataFrame = [key: int]
+
+scala> kvDF.select('key, 'key > 1).show
++---+---------+
+|key|(key > 1)|
++---+---------+
+|  1|    false|
+|  2|     true|
++---+---------+
+
+
